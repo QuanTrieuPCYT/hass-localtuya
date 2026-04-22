@@ -831,10 +831,13 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         return await self.exchange(CMDType.HEART_BEAT)
 
     async def reset(self, dpIds=None, cid=None):
-        """Send a reset message (3.3 only)."""
+        """Send a reset message (3.3+)."""
         if self.version == 3.3:
             self.dev_type = "type_0a"
             self.debug("reset switching to dev_type %s", self.dev_type)
+            return await self.exchange(CMDType.UPDATEDPS, dpIds, nodeID=cid)
+        elif self.version >= 3.4:
+            self.debug("reset for 3.4 and later: switching to dev_type %s", self.dev_type)
             return await self.exchange(CMDType.UPDATEDPS, dpIds, nodeID=cid)
 
         return True
