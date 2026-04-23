@@ -254,6 +254,16 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
                 self.debug("Retrieving initial state")
                 status = await self._interface.status(cid=self._node_id)
+
+                if reset_dpids and status and any(
+                    str(dp) not in status for dp in reset_dpids
+                ):
+                    self.debug(
+                        "Reset DPs still missing from status %s — retrying",
+                        [dp for dp in reset_dpids if str(dp) not in status],
+                    )
+                    status = await self._interface.status(cid=self._node_id)
+
                 if status is None:
                     raise Exception("Failed to retrieve status")
 
